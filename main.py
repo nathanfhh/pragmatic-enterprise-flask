@@ -1,7 +1,9 @@
 from apiflask import APIFlask, Schema, fields
 from marshmallow import validate, post_load
 
-app = APIFlask(__name__)
+app = APIFlask(
+    __name__, title="Calculator API", version="1.0.0", docs_ui="redoc"
+)
 app.config["VALIDATION_ERROR_STATUS_CODE"] = 400
 
 
@@ -21,10 +23,11 @@ def handle_custom_exception(error):
 
 
 class MathOperationSchema(Schema):
-    x = fields.Float(required=True)
-    y = fields.Float(required=True)
+    x = fields.Float(required=True, metadata={"description": "數字一"})
+    y = fields.Float(required=True, metadata={"description": "數字二"})
     operation = fields.String(
         required=True,
+        metadata={"description": "運算符號"},
         validate=validate.OneOf(
             ["add", "subtract", "multiply", "divide"]
         )
@@ -40,6 +43,7 @@ class MathOperationSchema(Schema):
 @app.post("/calculate")
 @app.input(MathOperationSchema, location="json")
 def do_calculation(json_data):
+    """進行數學運算"""
     operation_mapper = {
         "add": lambda x, y: x + y,
         "subtract": lambda x, y: x - y,
