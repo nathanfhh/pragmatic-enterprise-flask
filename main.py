@@ -4,6 +4,7 @@ from marshmallow import validate, post_load
 app = APIFlask(
     __name__, title="Calculator API", version="1.0.0", docs_ui="redoc"
 )
+app.config["INFO"] = {'description': '這是簡易計算機的 API 文件。'}
 app.config["VALIDATION_ERROR_STATUS_CODE"] = 400
 
 
