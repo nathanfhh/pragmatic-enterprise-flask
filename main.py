@@ -1,31 +1,56 @@
-from flask import Flask, request
+from apiflask import APIFlask, Schema, fields
+from marshmallow import validate, post_load
 
-app = Flask(__name__)
+app = APIFlask(__name__)
+app.config["VALIDATION_ERROR_STATUS_CODE"] = 400
+
+
+class CustomException(Exception):
+    def __init__(self, message, status_code=400):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
+
+
+@app.errorhandler(CustomException)
+def handle_custom_exception(error):
+    return {
+        "result": False,
+        "message": error.message
+    }, error.status_code
+
+
+class MathOperationSchema(Schema):
+    x = fields.Float(required=True)
+    y = fields.Float(required=True)
+    operation = fields.String(
+        required=True,
+        validate=validate.OneOf(
+            ["add", "subtract", "multiply", "divide"]
+        )
+    )
+
+    @post_load
+    def validate_division_by_zero(self, data, **kwargs):
+        if data["operation"] == "divide" and data["y"] == 0:
+            raise CustomException("Division by zero is not allowed")
+        return data
 
 
 @app.post("/calculate")
-def do_calculation():
-    json_data = request.get_json(silent=True)
-    if not json_data:
-        return {"result": False, "message": "No JSON data received"}, 400
-    if (number1 := json_data.get("x")) is None or (number2 := json_data.get("y")) is None:
-        return {"result": False, "message": "Please provide two numbers."}, 400
-    if not all(map(lambda x: isinstance(x, (int, float)), (number1, number2))):
-        return {"result": False, "message": "Numbers must be integers or floats."}, 400
+@app.input(MathOperationSchema, location="json")
+def do_calculation(json_data):
     operation_mapper = {
         "add": lambda x, y: x + y,
         "subtract": lambda x, y: x - y,
         "multiply": lambda x, y: x * y,
         "divide": lambda x, y: x / y,
     }
-    operation = json_data.get("operation")
-    if not (handler := operation_mapper.get(operation)):
-        return {"result": False, "message": "Invalid operation"}, 400
-    try:
-        result = handler(number1, number2)
-    except ZeroDivisionError:
-        return {"result": False, "message": "Division by zero"}, 400
-    return {"result": True, "data": result}
+    handler = operation_mapper[json_data["operation"]]
+    return {
+        "result": True,
+        "data": handler(json_data['x'], json_data['y'])
+    }
 
 
 if __name__ == "__main__":
