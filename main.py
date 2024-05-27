@@ -1,6 +1,17 @@
 from apiflask import APIFlask, Schema, fields
-from marshmallow import validate, post_load
+from marshmallow import validate
+import sentry_sdk
 
+sentry_sdk.init(
+    dsn="https://1876a7b2c4ba159d4adfd619c1f7ee2a@o4506166915235840.ingest.us.sentry.io/4507321532874752",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 app = APIFlask(
     __name__, title="Calculator API", version="1.0.0", docs_ui="redoc"
 )
@@ -33,12 +44,7 @@ class MathOperationSchema(Schema):
             ["add", "subtract", "multiply", "divide"]
         )
     )
-
-    @post_load
-    def validate_division_by_zero(self, data, **kwargs):
-        if data["operation"] == "divide" and data["y"] == 0:
-            raise CustomException("Division by zero is not allowed")
-        return data
+    # 移除 post_load 使 Division by zero 驗證失效
 
 
 @app.post("/calculate")
