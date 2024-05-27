@@ -1,0 +1,20 @@
+FROM python:3.11-slim-buster as builder
+
+WORKDIR /root/Service
+
+COPY requirements.txt /root/Service/
+
+RUN pip install -r requirements.txt
+
+
+FROM gcr.io/distroless/python3-debian12
+
+ENV PYTHONPATH=/root/Service:/usr/local/lib/python3.11/site-packages
+
+WORKDIR /root/Service
+
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+CMD ["run_gunicorn.py", "-b", ":7500", "main:app", "-w", "3", "-t", "10", "-k", "gthread"]
+
+ADD . /root/Service
