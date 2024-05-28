@@ -1,3 +1,5 @@
+from socket import gethostname
+
 from apiflask import APIFlask, Schema, fields
 from marshmallow import validate
 import sentry_sdk
@@ -60,7 +62,8 @@ def do_calculation(json_data):
     handler = operation_mapper[json_data["operation"]]
     return {
         "result": True,
-        "data": handler(json_data['x'], json_data['y'])
+        "data": handler(json_data['x'], json_data['y']),
+        "reply_from": gethostname()
     }
 
 

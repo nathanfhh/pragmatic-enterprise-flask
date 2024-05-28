@@ -21,6 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: "unless-stopped"
+    hostname: backend
     environment:
       SCRIPT_NAME: '/api'  # gunicorn 22.0.0 無法正確讀取，因此需在環境變數中設定
     logging:
@@ -31,6 +32,7 @@ services:
 
   backend-distroless:
     <<: *default_backend
+    hostname: backend-distroless
     build:
       context: .
       dockerfile: Dockerfile-distroless
