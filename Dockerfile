@@ -16,4 +16,4 @@ RUN pip install -r requirements.txt
 
 ADD . /root/Service
 
-CMD gunicorn -b :7500 main:app --workers 3 --threads 10 --worker-class gthread
+CMD gunicorn -b :7500 main:app --workers 3 --threads 10 --worker-class gthread --access-logfile -

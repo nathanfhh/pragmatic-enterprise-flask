@@ -15,6 +15,6 @@ WORKDIR /root/Service
 
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-CMD ["run_gunicorn.py", "-b", ":7500", "main:app", "-w", "3", "-t", "10", "-k", "gthread"]
+CMD ["run_gunicorn.py", "-b", ":7500", "main:app", "-w", "3", "-t", "10", "-k", "gthread", "--access-logfile", "-"]
 
 ADD . /root/Service
