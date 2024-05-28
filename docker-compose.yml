@@ -36,3 +36,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-distroless
+
+  backend-alpine:
+    <<: *default_backend
+    hostname: backend-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile-alpine
