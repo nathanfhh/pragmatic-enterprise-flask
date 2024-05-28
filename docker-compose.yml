@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: deploy/nginx
+    restart: "unless-stopped"
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "50m"
+
+  backend:
+    &default_backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "unless-stopped"
+    environment:
+      SCRIPT_NAME: '/api'  # gunicorn 22.0.0 無法正確讀取，因此需在環境變數中設定
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "50m"
+
+  backend-distroless:
+    <<: *default_backend
+    build:
+      context: .
+      dockerfile: Dockerfile-distroless
